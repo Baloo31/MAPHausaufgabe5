@@ -2,6 +2,9 @@ package Model;
 
 import java.util.List;
 
+/**
+ * Teacher
+ */
 public class Teacher extends Person implements Comparable<Teacher>{
     private long teacherId;
     private List<Long> courses;

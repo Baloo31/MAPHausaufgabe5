@@ -2,6 +2,9 @@ package Model;
 
 import java.util.List;
 
+/**
+ * Course
+ */
 public class Course implements Comparable<Course>{
     private String name;
     private long teacherId;

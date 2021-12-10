@@ -158,7 +158,7 @@ public class RegistrationSystem {
         Teacher teacher = teacherRepo.getAll().get(teacherIndex);
 
         if (course.getTeacher() != teacherId) {
-            throw new NotTeachingTheCourseException("Course is not teached by this teacher !");
+            throw new NotTeachingTheCourseException("Course is not taught by this teacher !");
         }
 
 
@@ -177,11 +177,12 @@ public class RegistrationSystem {
 
 
     /**
-     * Adds a teacher to the repository
+     * Adds a teacher to the database
      * @param firstName first name
      * @param lastName last name
      * @param teacherId teacher id
      * @throws AlreadyExistsException if this teacher already exists
+     * @throws SQLException if a query is incorrect
      */
     public void addTeacher(String firstName, String lastName, long teacherId) throws AlreadyExistsException, SQLException {
         for (Teacher teacher : teacherRepo.getAll()){
@@ -192,6 +193,15 @@ public class RegistrationSystem {
         teacherRepo.create(new Teacher(firstName, lastName, new LinkedList<>(), teacherId));
     }
 
+
+    /**
+     * Adds a student to the database
+     * @param firstName first name
+     * @param lastName last name
+     * @param studentId student id
+     * @throws AlreadyExistsException if the student already exists
+     * @throws SQLException if a query is incorrect
+     */
     public void addStudent(String firstName, String lastName, long studentId) throws AlreadyExistsException, SQLException {
         for (Student student : studentRepo.getAll()){
             if (student.getStudentId() == studentId){
@@ -201,6 +211,18 @@ public class RegistrationSystem {
         studentRepo.create(new Student(firstName, lastName, new LinkedList<>(), studentId));
     }
 
+
+    /**
+     * Adds a course to the database
+     * @param name course name
+     * @param teacherId teacher teaching the course (his id)
+     * @param maxEnrollment maximum number of students who can join the course
+     * @param credits number of credits
+     * @param courseId course id
+     * @throws AlreadyExistsException if the course already exists
+     * @throws ElementDoesNotExistException if the teacher does not exist
+     * @throws SQLException if a query is incorrect
+     */
     public void addCourse(String name, long teacherId, int maxEnrollment, int credits, long courseId) throws AlreadyExistsException, ElementDoesNotExistException, SQLException {
         for (Course course : courseRepo.getAll()) {
             if (course.getCourseId() == courseId) {
@@ -302,4 +324,3 @@ public class RegistrationSystem {
     }
 
 }
-

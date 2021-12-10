@@ -25,7 +25,7 @@ class RegistrationSystemTest {
             registrationSystem = new RegistrationSystem("jdbc:mysql://localhost:3306/university", "root", "password31");
 
             // Removing old data
-            Connection connection = null;
+            Connection connection;
             try {
                 connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/university", "root", "password31");
                 Statement statement1 = connection.createStatement();
@@ -209,13 +209,6 @@ class RegistrationSystemTest {
             studentsEnrolledForThisCourse = registrationSystem.retrieveStudentsEnrolledForACourse(1);
         } catch (SQLException e) {
             Assertions.fail();
-        }
-
-        System.out.println(studentsEnrolledForThisCourse);
-        try {
-            System.out.println(registrationSystem.retrieveAllStudents());
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
         try {

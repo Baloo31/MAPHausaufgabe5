@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * CRUD operations repository interface
+ * CRUD operation repository interface
  * @param <T>
  */
 public interface ICrudRepository<T> {

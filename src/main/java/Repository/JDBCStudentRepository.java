@@ -1,23 +1,37 @@
 package Repository;
 
-import Model.Course;
 import Model.Student;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.sql.*;
 
+/**
+ * JDBCStudentRepository
+ */
 public class JDBCStudentRepository implements ICrudRepository<Student>{
     private String DB_URL;
     private String USER;
     private String PASS;
 
+    /**
+     * Constructor
+     * @param url the database url
+     * @param user the user to access
+     * @param password the password for the user
+     */
     public JDBCStudentRepository(String url, String user, String password){
         DB_URL = url;
         USER = user;
         PASS = password;
     }
 
+
+    /**
+     * Adds a new Student to the database
+     * @param obj : an object to add (Student)
+     * @throws SQLException if a query is incorrect
+     */
     @Override
     public void create(Student obj) throws SQLException {
         Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -31,6 +45,12 @@ public class JDBCStudentRepository implements ICrudRepository<Student>{
         connection.close();
     }
 
+
+    /**
+     * Returns all students
+     * @return list of students
+     * @throws SQLException if a query is incorrect
+     */
     @Override
     public List<Student> getAll() throws SQLException {
         Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -62,6 +82,12 @@ public class JDBCStudentRepository implements ICrudRepository<Student>{
         return students;
     }
 
+
+    /**
+     * Updates a student from the database
+     * @param obj : Student to update
+     * @throws SQLException if a query is incorrect
+     */
     @Override
     public void update(Student obj) throws SQLException {
         Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
@@ -100,12 +126,17 @@ public class JDBCStudentRepository implements ICrudRepository<Student>{
         connection.close();
     }
 
+    /**
+     * Deletes a student from the database
+     * @param obj : Student to delete
+     * @throws SQLException if a query is incorrect
+     */
     @Override
     public void delete(Student obj) throws SQLException {
         Connection connection = DriverManager.getConnection(DB_URL, USER, PASS);
         Statement statement = connection.createStatement();
 
-        // Unenroll student from all courses
+        // Un-enroll student from all courses
         String deleteEnrollment = String.format("DELETE FROM enrolled WHERE studentId=%2d", obj.getStudentId());
         statement.execute(deleteEnrollment);
 
