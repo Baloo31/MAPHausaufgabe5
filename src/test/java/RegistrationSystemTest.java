@@ -210,10 +210,26 @@ class RegistrationSystemTest {
         } catch (SQLException e) {
             Assertions.fail();
         }
+
+        System.out.println(studentsEnrolledForThisCourse);
+        try {
+            System.out.println(registrationSystem.retrieveAllStudents());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         try {
             for (Student student : registrationSystem.retrieveAllStudents()){
-                System.out.println(student);
-                //Assertions.assertTrue(studentsEnrolledForThisCourse.contains(student));
+                boolean contained = false;
+                for (Student studentEnrolled : studentsEnrolledForThisCourse) {
+                    if (student.getStudentId() == studentEnrolled.getStudentId()) {
+                        contained = true;
+                        break;
+                    }
+                }
+                if (!contained){
+                    fail();
+                }
             }
         } catch (SQLException e) {
             Assertions.fail();
@@ -367,10 +383,11 @@ class RegistrationSystemTest {
                 } catch (ElementDoesNotExistException | MaxCreditsSurpassedException | MaxEnrollmentSurpassedException | AlreadyExistsException e) {
                     fail();
                 }
+            }
 
-                // Cheching the credits
+            for (Student student : registrationSystem.retrieveAllStudents()) {
+                // Checking the credits
                 assertEquals(5, registrationSystem.calculateStudentCredits(student));
-
             }
         } catch (SQLException e) {
             fail();
@@ -389,7 +406,14 @@ class RegistrationSystemTest {
             } catch (ElementDoesNotExistException | MaxCreditsSurpassedException | MaxEnrollmentSurpassedException | AlreadyExistsException | SQLException e) {
                 fail();
             }
+        }
 
+        try {
+            students = registrationSystem.retrieveAllStudents();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        for (int idx = 0; idx < 3; idx++){
             // Check if this Student will have the number of credits 10
             try {
                 assertEquals(10, registrationSystem.calculateStudentCredits(students.get(idx)));
