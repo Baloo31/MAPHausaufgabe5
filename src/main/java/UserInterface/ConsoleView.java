@@ -6,6 +6,7 @@ import Model.Course;
 import Model.Student;
 import Model.Teacher;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
@@ -20,7 +21,7 @@ public class ConsoleView {
      * Constructor for the user interface
      */
     public ConsoleView() {
-        registrationSystem = new RegistrationSystem("course.json", "student.json", "teacher.json");
+        registrationSystem = new RegistrationSystem("jdbc:mysql://localhost:3306/university", "root", "password31");
         inputScanner = new Scanner(System.in);
     }
 
@@ -29,9 +30,6 @@ public class ConsoleView {
      * Starts the application (the option menu)
      */
     public void start(){
-
-        // data from json files is read
-        registrationSystem.readAllData();
 
         int option = -1;
         while (option != 0) {
@@ -71,9 +69,6 @@ public class ConsoleView {
             }
         }
 
-        // The new data is written to the json files
-        registrationSystem.writeAllData();
-
         System.out.println("The Application was closed !\s");
     }
 
@@ -98,6 +93,8 @@ public class ConsoleView {
             System.out.println("Student added successfully !");
         } catch (AlreadyExistsException e) {
             System.out.println("Student already exists !");
+        } catch (SQLException throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -122,6 +119,8 @@ public class ConsoleView {
             System.out.println("Teacher added successfully !");
         } catch (AlreadyExistsException e) {
             System.out.println("Teacher already exists !");
+        } catch (SQLException throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -155,6 +154,8 @@ public class ConsoleView {
             System.out.println("Course already exists !");
         } catch (ElementDoesNotExistException e) {
             System.out.println("That teacher does not exist !");
+        } catch (SQLException throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -182,6 +183,8 @@ public class ConsoleView {
             System.out.println("This course has no available places !");
         } catch (AlreadyExistsException e) {
             System.out.println("Student is already registered to this course !");
+        } catch (SQLException throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -190,8 +193,12 @@ public class ConsoleView {
      * shows the courses with free places
      */
     public void retrieveFree(){
-        for (Course course : registrationSystem.retrieveCoursesWithFreePlaces()){
-            System.out.println(course);
+        try {
+            for (Course course : registrationSystem.retrieveCoursesWithFreePlaces()){
+                System.out.println(course);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -199,8 +206,12 @@ public class ConsoleView {
      * shows all courses
      */
     public void retrieveAll(){
-        for (Course course : registrationSystem.getAllCourses()){
-            System.out.println(course);
+        try {
+            for (Course course : registrationSystem.getAllCourses()){
+                System.out.println(course);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -224,6 +235,8 @@ public class ConsoleView {
             System.out.println("Course or teacher does not exist !");
         } catch (NotTeachingTheCourseException e) {
             System.out.println("The specified teacher is not teaching this course !");
+        } catch (SQLException throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -232,8 +245,12 @@ public class ConsoleView {
      * shows all teachers
      */
     public void showAllTeachers(){
-        for (Teacher teacher : registrationSystem.retrieveAllTeachers()){
-            System.out.println(teacher);
+        try {
+            for (Teacher teacher : registrationSystem.retrieveAllTeachers()){
+                System.out.println(teacher);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -242,8 +259,12 @@ public class ConsoleView {
      * shows all students
      */
     public void showAllStudents(){
-        for (Student student : registrationSystem.retrieveAllStudents()){
-            System.out.println(student);
+        try {
+            for (Student student : registrationSystem.retrieveAllStudents()){
+                System.out.println(student);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -252,8 +273,12 @@ public class ConsoleView {
      * shows all students sorted ascending by their id
      */
     public void showStudentsSortedById(){
-        for (Student student : registrationSystem.sortStudentsById()){
-            System.out.println(student);
+        try {
+            for (Student student : registrationSystem.sortStudentsById()){
+                System.out.println(student);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -262,8 +287,12 @@ public class ConsoleView {
      * shows all courses sorted alphabetically by their name
      */
     public void showCoursesSortedByName(){
-        for (Course course : registrationSystem.sortCoursesByName()){
-            System.out.println(course);
+        try {
+            for (Course course : registrationSystem.sortCoursesByName()){
+                System.out.println(course);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -272,8 +301,12 @@ public class ConsoleView {
      * filters the students enrolled for at least one course
      */
     public void filterStudentsEnrolled(){
-        for (Student student : registrationSystem.filterStudentsEnrolled()){
-            System.out.println(student);
+        try {
+            for (Student student : registrationSystem.filterStudentsEnrolled()){
+                System.out.println(student);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -282,8 +315,12 @@ public class ConsoleView {
      * filters the courses with at least one student enrolled for
      */
     public void filterCoursesWithStudents(){
-        for (Course course : registrationSystem.filterCoursesWithStudents()){
-            System.out.println(course);
+        try {
+            for (Course course : registrationSystem.filterCoursesWithStudents()){
+                System.out.println(course);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

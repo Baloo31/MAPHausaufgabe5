@@ -4,11 +4,12 @@ import Exceptions.*;
 import Model.Course;
 import Model.Student;
 import Model.Teacher;
-import Repository.CourseRepository;
-import Repository.StudentRepository;
-import Repository.TeacherRepository;
+import Repository.ICrudRepository;
+import Repository.JDBCCourseRepository;
+import Repository.JDBCStudentRepository;
+import Repository.JDBCTeacherRepository;
 
-import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,20 +19,17 @@ import java.util.List;
  * Registration system
  */
 public class RegistrationSystem {
-    private CourseRepository courseRepo;
-    private StudentRepository studentRepo;
-    private TeacherRepository teacherRepo;
+    private ICrudRepository<Course> courseRepo;
+    private ICrudRepository<Student> studentRepo;
+    private ICrudRepository<Teacher> teacherRepo;
 
     /**
      * Constructor
-     * @param coursesFile name of the json files where the courses are stored
-     * @param studentsFile name of the json files where the students are stored
-     * @param teacherFile name of the json files where the teachers are stored
      */
-    public RegistrationSystem(String coursesFile, String studentsFile, String teacherFile){
-        studentRepo = new StudentRepository(studentsFile);
-        teacherRepo = new TeacherRepository(teacherFile);
-        courseRepo = new CourseRepository(coursesFile);
+    public RegistrationSystem(String url, String user, String pass){
+        studentRepo = new JDBCStudentRepository(url, user, pass);
+        teacherRepo = new JDBCTeacherRepository(url, user, pass);
+        courseRepo = new JDBCCourseRepository(url, user, pass);
     }
 
 
@@ -44,7 +42,7 @@ public class RegistrationSystem {
      * @throws MaxEnrollmentSurpassedException if the course is full
      * @throws AlreadyExistsException if the student is already registered to this course
      */
-    public void register(long courseId, long studentId) throws ElementDoesNotExistException, MaxCreditsSurpassedException, MaxEnrollmentSurpassedException, AlreadyExistsException {
+    public void register(long courseId, long studentId) throws ElementDoesNotExistException, MaxCreditsSurpassedException, MaxEnrollmentSurpassedException, AlreadyExistsException, SQLException {
         int studentIndex = -1;
         for (int idx = 0; idx < studentRepo.getAll().size(); idx++){
             if (studentRepo.getAll().get(idx).getStudentId() == studentId) {
@@ -92,7 +90,7 @@ public class RegistrationSystem {
      * Retrieves the courses with free places
      * @return a list of courses with free places
      */
-    public List<Course> retrieveCoursesWithFreePlaces(){
+    public List<Course> retrieveCoursesWithFreePlaces() throws SQLException {
         List<Course> freePlacesCourses = new LinkedList<>();
         for (Course course : courseRepo.getAll()){
             if (course.getMaxEnrollment() > course.getNumberOfStudents()){
@@ -108,7 +106,7 @@ public class RegistrationSystem {
      * @param courseId course id
      * @return a list of students enrolled for this course
      */
-    public List<Student> retrieveStudentsEnrolledForACourse(long courseId){
+    public List<Student> retrieveStudentsEnrolledForACourse(long courseId) throws SQLException {
         List<Student> studentsEnrolledForTheCourse = new LinkedList<>();
         for (Student student : studentRepo.getAll()){
             if (student.getEnrolledCourses().contains(courseId)){
@@ -123,7 +121,7 @@ public class RegistrationSystem {
      * Returns all courses
      * @return a list containing all available courses
      */
-    public List<Course> getAllCourses() {
+    public List<Course> getAllCourses() throws SQLException {
         return courseRepo.getAll();
     }
 
@@ -135,7 +133,7 @@ public class RegistrationSystem {
      * @throws ElementDoesNotExistException if the teacher or the course does not exist
      * @throws NotTeachingTheCourseException if the specified teacher is not teaching this course
      */
-    public void deleteTeacherCourse(long courseId, long teacherId) throws ElementDoesNotExistException, NotTeachingTheCourseException {
+    public void deleteTeacherCourse(long courseId, long teacherId) throws ElementDoesNotExistException, NotTeachingTheCourseException, SQLException {
         int teacherIndex = -1;
         for (int idx = 0; idx < teacherRepo.getAll().size(); idx++){
             if (teacherRepo.getAll().get(idx).getTeacherId() == teacherId) {
@@ -173,9 +171,6 @@ public class RegistrationSystem {
             }
         }
 
-        teacher.deleteCourse(courseId);
-        teacherRepo.update(teacher);
-
         courseRepo.delete(course);
 
     }
@@ -188,7 +183,7 @@ public class RegistrationSystem {
      * @param teacherId teacher id
      * @throws AlreadyExistsException if this teacher already exists
      */
-    public void addTeacher(String firstName, String lastName, long teacherId) throws AlreadyExistsException {
+    public void addTeacher(String firstName, String lastName, long teacherId) throws AlreadyExistsException, SQLException {
         for (Teacher teacher : teacherRepo.getAll()){
             if (teacher.getTeacherId() == teacherId){
                 throw new AlreadyExistsException("Teacher already exists !");
@@ -197,7 +192,7 @@ public class RegistrationSystem {
         teacherRepo.create(new Teacher(firstName, lastName, new LinkedList<>(), teacherId));
     }
 
-    public void addStudent(String firstName, String lastName, long studentId) throws AlreadyExistsException {
+    public void addStudent(String firstName, String lastName, long studentId) throws AlreadyExistsException, SQLException {
         for (Student student : studentRepo.getAll()){
             if (student.getStudentId() == studentId){
                 throw new AlreadyExistsException("Student already exists !");
@@ -206,7 +201,7 @@ public class RegistrationSystem {
         studentRepo.create(new Student(firstName, lastName, new LinkedList<>(), studentId));
     }
 
-    public void addCourse(String name, long teacherId, int maxEnrollment, int credits, long courseId) throws AlreadyExistsException, ElementDoesNotExistException {
+    public void addCourse(String name, long teacherId, int maxEnrollment, int credits, long courseId) throws AlreadyExistsException, ElementDoesNotExistException, SQLException {
         for (Course course : courseRepo.getAll()) {
             if (course.getCourseId() == courseId) {
                 throw new AlreadyExistsException("Course already exists !");
@@ -225,10 +220,6 @@ public class RegistrationSystem {
             throw new ElementDoesNotExistException("The specified Teacher does not exist !");
         }
 
-        Teacher teacher = teacherRepo.getAll().get(teacherIndex);
-        teacher.addCourse(courseId);
-        teacherRepo.update(teacher);
-
         courseRepo.create(new Course(name, teacherId, maxEnrollment, credits, courseId, new LinkedList<>()));
     }
 
@@ -238,7 +229,7 @@ public class RegistrationSystem {
      * @param student a student
      * @return his number of credits
      */
-    public int calculateStudentCredits(Student student){
+    public int calculateStudentCredits(Student student) throws SQLException {
         int nrCredits = 0;
         for (long courseId : student.getEnrolledCourses()){
             for (Course course : courseRepo.getAll()) {
@@ -255,7 +246,7 @@ public class RegistrationSystem {
      * Retrieves all students
      * @return list of all students
      */
-    public List<Student> retrieveAllStudents(){
+    public List<Student> retrieveAllStudents() throws SQLException {
         return studentRepo.getAll();
     }
 
@@ -264,7 +255,7 @@ public class RegistrationSystem {
      * Retrieves all teachers
      * @return list of all teachers
      */
-    public List<Teacher> retrieveAllTeachers(){
+    public List<Teacher> retrieveAllTeachers() throws SQLException {
         return teacherRepo.getAll();
     }
 
@@ -273,7 +264,7 @@ public class RegistrationSystem {
      * Sorts all students ascending by id
      * @return a list with all students sorted ascending by their id
      */
-    public List<Student> sortStudentsById(){
+    public List<Student> sortStudentsById() throws SQLException {
         List<Student> students = studentRepo.getAll();
         Comparator<Student> studentComparator = Comparator.comparing(Student::getStudentId);
         return students.stream().sorted(studentComparator).toList();
@@ -284,7 +275,7 @@ public class RegistrationSystem {
      * Sorts all courses alphabetically by name
      * @return a list of courses sorted alphabetically by their name
      */
-    public List<Course> sortCoursesByName(){
+    public List<Course> sortCoursesByName() throws SQLException {
         List<Course> courses = courseRepo.getAll();
         Comparator<Course> courseComparator = Comparator.comparing(Course::getName);
         return courses.stream().sorted(courseComparator).toList();
@@ -295,7 +286,7 @@ public class RegistrationSystem {
      * Filters the students enrolled to at least a course
      * @return the list of students enrolled to one or more courses
      */
-    public List<Student> filterStudentsEnrolled(){
+    public List<Student> filterStudentsEnrolled() throws SQLException {
         List<Student> students = studentRepo.getAll();
         return students.stream().filter(stud -> stud.getNumberOfCourses() > 0).toList();
     }
@@ -305,62 +296,9 @@ public class RegistrationSystem {
      * Filters the courses with at least a student enrolled for
      * @return the list of courses with one or more students
      */
-    public List<Course> filterCoursesWithStudents(){
+    public List<Course> filterCoursesWithStudents() throws SQLException {
         List<Course> courses = courseRepo.getAll();
         return courses.stream().filter(course -> course.getNumberOfStudents() > 0).toList();
-    }
-
-
-    /**
-     * Reads all the data inside the three json files :
-     * student.json, course.json, teacher.json
-     * (Students, Courses, Teachers)
-     */
-    public void readAllData(){
-        try {
-            studentRepo.readData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            teacherRepo.readData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            courseRepo.readData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
-    /**
-     * Stores all the created/updated objects inside the three json files :
-     * student.json, course.json, teacher.json
-     * (Students, Courses, Teachers)
-     */
-    public void writeAllData(){
-        try {
-            courseRepo.writeData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            studentRepo.writeData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            teacherRepo.writeData();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 }

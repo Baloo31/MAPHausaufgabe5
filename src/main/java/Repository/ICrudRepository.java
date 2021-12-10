@@ -1,5 +1,6 @@
 package Repository;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -12,29 +13,27 @@ public interface ICrudRepository<T> {
     /**
      * adds an object
      * @param obj : an object to add (T)
-     * @return the added object
      */
-    T create(T obj);
+    void create(T obj) throws SQLException;
 
 
     /**
      * @return all objects
      */
-    List<T> getAll();
+    List<T> getAll() throws SQLException;
 
 
     /**
      * updates an object
      * @param obj : object to update
-     * @return updated object
      */
-    T update(T obj);
+    void update(T obj) throws SQLException;
 
 
     /**
      * deletes and object
      * @param obj : object to delete
      */
-    void delete(T obj);
+    void delete(T obj) throws SQLException;
 
 }
